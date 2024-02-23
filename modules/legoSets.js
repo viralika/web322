@@ -1,50 +1,44 @@
 const setData = require("../data/setData");
 const themeData = require("../data/themeData");
-
-let sets = [];
-
-function initialize() {
-    return new Promise((resolve, reject) => {
-        setData.forEach(set => {
-            const themeName = themeData.find(theme => theme.id === set.theme_id)?.name || "Unknown";
-            sets.push({ ...set, theme: themeName });
-        });
-        resolve();
-    });
+let sets = [];  
+async function initialize() {
+  await Promise.all(
+    setData.map(async (setElement) => {
+      const found = themeData.find((themeElement) =>
+        themeElement.id === setElement.theme_id
+      );
+      if (found) {
+        setElement.theme = found.name;
+        sets.push(setElement);
+      }
+    })
+  );
 }
 
-function getAllSets() {
-    return new Promise((resolve, reject) => {
-        if (sets.length > 0) {
-            resolve(sets);
-        } else {
-            reject("No sets available");
-        }
-    });
+async function getAllSets() {
+  return Promise.resolve([...sets]); // Return a copy of the sets array to prevent external modification
 }
 
-function getSetByNum(setNum) {
-    return new Promise((resolve, reject) => {
-        const foundSet = sets.find(set => set.set_num === setNum);
-        if (foundSet) {
-            resolve(foundSet);
-        } else {
-            reject(`Set with number ${setNum} not found`);
-        }
-    });
+async function getSetByNum(setNum) {
+  const foundNum = sets.find((set) => set.set_num === setNum);
+
+  if (foundNum) {
+    return Promise.resolve({ ...foundNum }); // Return a copy of the found object to prevent external modification
+  } else {
+    return Promise.reject(new Error('Unable to find requested set'));
+  }
 }
 
-function getSetsByTheme(theme) {
-    return new Promise((resolve, reject) => {
-        const lowercaseTheme = theme.toLowerCase();
-        const matchingSets = sets.filter(set => set.theme.toLowerCase().includes(lowercaseTheme));
-        if (matchingSets.length > 0) {
-            resolve(matchingSets);
-        } else {
-            reject(`No sets found for theme ${theme}`);
-        }
-    });
-}
+async function getSetsByTheme(theme) {
+  const themeLower = theme.toLowerCase();
+  const foundTheme = sets.filter((set) =>
+    set.theme.toLowerCase().includes(themeLower)
+  );
 
+  if (foundTheme.length > 0) {
+    return Promise.resolve([...foundTheme]); // Return a copy of the found array to prevent external modification
+  } else {
+    return Promise.reject(new Error('Unable to find requested sets'));
+  }
+}
 module.exports = { initialize, getAllSets, getSetByNum, getSetsByTheme };
-

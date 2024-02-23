@@ -1,6 +1,8 @@
+/* Include base styles */
+@import 'tailwindcss/base';
 
-@tailwind base;
+/* Include component styles */
+@import 'tailwindcss/components';
 
-@tailwind components;
-
-@tailwind utilities;
+/* Include utility styles */
+@import 'tailwindcss/utilities';
